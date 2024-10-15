@@ -1,1 +1,10 @@
-# CursorTraining
+## 光标训练小游戏
+- 该游戏可以训练玩家的鼠标定位能力，以至于提高工作效率
+- [点击前往下载页面](https://github.com/Hgnim/CursorTraining/releases/latest)
+## 游戏玩法
+- 启动游戏程序后，按任意键开始游戏。
+- 游戏开始后，玩家有30秒时间进行游戏。通过鼠标点击目标色块，点击到色块后色块会立刻更换位置，玩家需要重复这一动作，直到游戏倒计时结束。<br/>
+  <img src="https://github.com/user-attachments/assets/0094b490-fc8b-42d0-a2ab-f12794677ad3" width="50%" />
+- 正确的点击到色块后得分+1，错误的点击到别的位置时得分-1。
+##
+后续可能会推出更多有趣的游戏玩法，尽请期待。
