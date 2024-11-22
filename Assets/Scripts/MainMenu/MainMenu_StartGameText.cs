@@ -9,7 +9,7 @@ using static PublicClass.DLL;
 
 public class MainMenu_StartGameText : MonoBehaviour
 {
-    public const string version = "1.0.0.20241015";
+    public const string version = "1.1.0.20241122";
 
 
 
@@ -34,7 +34,7 @@ public class MainMenu_StartGameText : MonoBehaviour
             DontDestroyOnLoad(GameObject.Find("KeyManager")); 
             DontDestroyOnLoad(GameObject.Find("ThreadDelegate"));
             SceneManager.LoadScene("Game");
-        }
+		}
 exitVoid:;
     }
 }

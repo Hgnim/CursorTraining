@@ -117,7 +117,7 @@ public class KeyManager : MonoBehaviour
 #else
             Application.Quit();
 #endif
-                wait = true;
+				wait = true;
             }, null);
             while (!wait) ;
 

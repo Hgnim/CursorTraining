@@ -57,19 +57,21 @@ public class NumberDataControl : MonoBehaviour
     /// 表示鼠标点击了某物
     /// </summary>
     /// <param name="isHit">是否命中目标</param>
-    internal delegate void MouseClickSomething(bool isHit);
-    internal static event MouseClickSomething MouseClickST_event;
-    internal static void Trigger_MouseClickST_event(bool isHit_)
+    /// <param name="id">点击ID</param>
+    internal delegate void MouseClickBall(bool isHit,int id);
+    internal static event MouseClickBall MouseClickST_event;
+    internal static void Trigger_MouseClickST_event(bool isHit_,int id_)
     {
-        MouseClickST_event(isHit_);
+        MouseClickST_event(isHit_,id_);
     }
 
     /// <summary>
-    /// 全写: MouseClickSomething<br/>
+    /// 全写: MouseClickBall<br/>
     /// 表示鼠标点击了某物
     /// </summary>
     /// <param name="isHit">是否命中目标</param>
-    internal void MouseClickST(bool isHit)
+    /// <param name="id">点击ID，用来判断加多少分</param>
+    internal void MCB_Click(bool isHit, int id)
     {
         if (!gameIsStart)
         {
@@ -80,7 +82,7 @@ public class NumberDataControl : MonoBehaviour
             countdownUIThread.Start();
         }
         if (isHit)
-            GameScore++;
+			GameScore+=id;
         else
             GameScore--;
         
@@ -96,20 +98,24 @@ public class NumberDataControl : MonoBehaviour
         }
         gameTime = 0;
 
-        MessageBox(IntPtr.Zero, "最后得分为: " + gameScore.ToString(), "游戏结束", 0);
-        {
-            bool wait = false;
-            ThreadDelegate.QueueOnMainThread((param) =>
+		ThreadDelegate.QueueOnMainThread((param) =>
+		{
+			if (Application.isPlaying)
+              {
+                GameObject gom = GameObject.Find("GameOverMenu_Root").transform.Find("GameOverMenu").gameObject;
+                gom.SetActive(true);
+				GameObject.Find("GameOverMenu/GameOverMenu_Score").GetComponent<Text>().text = $"最后得分: {gameScore}";
+               GameOverMenu.RestartButton_ClickEvent += (() =>
             {
-                single_ClickTarget.transform.localPosition = new Vector2(0, 0);
-                GameScore = 0;
-                gameIsStart = false;
-                GameTimeUI = 3000;
-                wait = true;
-            }, null);
-            while (!wait) ;
+				single_ClickTarget.transform.localPosition = new Vector2(0, 0);
+				GameScore = 0;
+				gameIsStart = false;
+				GameTimeUI = 3000;
+                gom.SetActive(false);
+			});
         }
-    }
+		}, null);
+	}
     void CountdownUIThread()
     {
         while(gameTime > 0)
@@ -130,7 +136,7 @@ public class NumberDataControl : MonoBehaviour
     }
     private void Start()
     {
-        NumberDataControl.MouseClickST_event += MouseClickST;
+        NumberDataControl.MouseClickST_event += MCB_Click;
     }
     /// <summary>
     /// 更精准的Sleep函数
