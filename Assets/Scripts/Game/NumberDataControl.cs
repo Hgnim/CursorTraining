@@ -1,12 +1,13 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
-using static PublicClass.DLL;
-using Debug = UnityEngine.Debug;
+using Cysharp.Threading.Tasks;
+using System;
+using System.Collections;
+using System.Timers;
 
 public class NumberDataControl : MonoBehaviour
 {
@@ -76,31 +77,44 @@ public class NumberDataControl : MonoBehaviour
         if (!gameIsStart)
         {
             gameIsStart = true;
-            countdownThread = new(CountdownThread);
+			/*countdownThread = new(CountdownThread);
             countdownUIThread = new(CountdownUIThread);
             countdownThread.Start();
-            countdownUIThread.Start();
-        }
+            countdownUIThread.Start();*/
+			//因为WebGL不支持多线程，所以改为协程运行
+			StartCoroutine( CountdownThread());
+			//CountdownUIThread();
+		}
         if (isHit)
 			GameScore+=id;
         else
             GameScore--;
         
     }
-    Thread countdownThread;
-    Thread countdownUIThread;
-    void CountdownThread()
+	IEnumerator CountdownThread()
     {
-        while (gameTime > 0)
-        {
-            Sleep(10);
-            gameTime--;
-        }
-        gameTime = 0;
-
-		ThreadDelegate.QueueOnMainThread((param) =>
+		static double tenms(DateTime startTime, DateTime endTime)
 		{
-			if (Application.isPlaying)
+			TimeSpan secondSpan = new(endTime.Ticks - startTime.Ticks);
+			return secondSpan.TotalMilliseconds/10;
+		}
+		DateTime start= DateTime.Now;
+        int gameTimeStartValue = gameTime;
+		while (gameTime > 0)
+		{
+			//await TaskSleep(10);
+			//await UniTask.Delay(10);
+			yield return new WaitForSeconds(0.01f);
+			//gameTime--;
+			gameTime = gameTimeStartValue-(int)tenms(start,DateTime.Now);
+			GameTimeUI = -1;
+		}
+        gameTime = 0;
+		GameTimeUI = 0;
+
+		/*ThreadDelegate.QueueOnMainThread((param) =>
+		{*/
+		if (Application.isPlaying)
               {
                 GameObject gom = GameObject.Find("GameOverMenu_Root").transform.Find("GameOverMenu").gameObject;
                 gom.SetActive(true);
@@ -114,45 +128,11 @@ public class NumberDataControl : MonoBehaviour
                 gom.SetActive(false);
 			});
         }
-		}, null);
+		/*}, null);*/	
 	}
-    void CountdownUIThread()
-    {
-        while(gameTime > 0)
-        {            
-            bool wait = false;
-            ThreadDelegate.QueueOnMainThread((param) =>
-            {
-                GameTimeUI = -1;
-                wait = true;
-            }, null);
-            Sleep(10);
-            while (!wait) ;
-        }
-        ThreadDelegate.QueueOnMainThread((param) =>
-        {
-            GameTimeUI = 0;
-        }, null);
-    }
     private void Start()
     {
         NumberDataControl.MouseClickST_event += MCB_Click;
     }
-    /// <summary>
-    /// 更精准的Sleep函数
-    /// </summary>
-    /// <param name="ms">毫秒</param>
-    static void Sleep(int ms)
-    {
-        var sw = Stopwatch.StartNew();
-        var sleepMs = ms - 16;
-        if (sleepMs > 0)
-        {
-            Thread.Sleep(sleepMs);
-        }
-        while (sw.ElapsedMilliseconds < ms)
-        {
-            Thread.Sleep(0);
-        }
-    }
+
 }

@@ -4,25 +4,27 @@ using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
+using System.Collections;
 
 public class KeyManager : MonoBehaviour
 {
     Thread keyListenThread;
     void Start()
     {
-        keyListenThread = new(KeyListenThread);
-        keyListenThread.Start();
-    }
+        /*keyListenThread = new(KeyListenThread);
+        keyListenThread.Start();*/
+		StartCoroutine(KeyListenThread());
+	}
     public static class WaitLock
     {
         internal static bool exitGameWaitLock = false;
     }
 
-    void KeyListenThread()
+	IEnumerator KeyListenThread()
     {
-        bool CheckEscKey()
+		static bool CheckEscKey()
         {
-            bool tmp = false;
+            /*bool tmp = false;
             bool wait = false;
             ThreadDelegate.QueueOnMainThread((param) =>
             {
@@ -30,9 +32,10 @@ public class KeyManager : MonoBehaviour
                 wait = true;
             }, null);
             while (!wait) ;
-            return tmp;
-        }
-        while (keyListenThread.IsAlive)
+            return tmp;*/
+            return GameKey.EscClick();
+		}
+        while (Application.isPlaying)
         {
             if (!WaitLock.exitGameWaitLock &&
                 CheckEscKey())
@@ -41,16 +44,16 @@ public class KeyManager : MonoBehaviour
                 //ExitGameWait();
                 ExitGame();
                 }
-            Thread.Sleep(10);
-        }
+			yield return new WaitForSeconds(0.01f);
+		}
     }
     /// <summary>
     /// 长按esc退出游戏
     /// </summary>
     void ExitGameWait()
     {
-        ThreadDelegate.QueueOnMainThread((param) =>
-        {
+        /*ThreadDelegate.QueueOnMainThread((param) =>
+        {*/
             GameObject quitText = GameObject.Find("MainCamera").transform.Find("Quit_Text").gameObject;
             quitText.SetActive(true);
             Text quitText_text = quitText.transform.Find("Quit_Text_text").gameObject.GetComponent<Text>();
@@ -64,15 +67,15 @@ public class KeyManager : MonoBehaviour
                 {
                     bool wait = false;
                     bool tmp = false;
-                    ThreadDelegate.QueueOnMainThread((param) =>
-                    {
+                    /*ThreadDelegate.QueueOnMainThread((param) =>
+                    {*/
                         quitText_text.text = mTxt.PadRight(mTxt.Length + i, '.');
                         if (!GameKey.EscClick())
                             tmp = false;
                         else
                             tmp = true;
                         wait = true;
-                    }, null);
+                    /*}, null);*/
                     while (!wait) ;
                     return tmp;
                 }
@@ -93,35 +96,34 @@ public class KeyManager : MonoBehaviour
     exit:;//停止退出程序
                 {
                     bool wait = false;
-                    ThreadDelegate.QueueOnMainThread((param) =>
-                    {
+                    /*ThreadDelegate.QueueOnMainThread((param) =>
+                    {*/
                         quitText_text.text = "";
                         quitText.SetActive(false);
                         wait = true;
-                    }, null);
+                    /*}, null);*/
                     while (!wait) ;
                 }
     over:;
                 
             });
             runThread.Start();
-        }, null);
+        /*}, null);*/
     }
     void ExitGame()
     {
-            bool wait = false;
-            ThreadDelegate.QueueOnMainThread((param) =>
-            {
+		/*bool wait = false;
+		ThreadDelegate.QueueOnMainThread((param) =>
+		{*/
 #if UNITY_EDITOR
-                UnityEditor.EditorApplication.isPlaying = false;
+		UnityEditor.EditorApplication.isPlaying = false;
 #else
             Application.Quit();
 #endif
-				wait = true;
-            }, null);
-            while (!wait) ;
-
-        WaitLock.exitGameWaitLock = false;
+		/*wait = true;
+	}, null);
+	while (!wait) ;*/
+		WaitLock.exitGameWaitLock = false;
     }
 }
 public static class GameKey
